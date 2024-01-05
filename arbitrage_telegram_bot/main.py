@@ -2,6 +2,7 @@ import os
 from typing import Any, Type 
 from dotenv import load_dotenv 
 from http import HTTPStatus
+
 from telegram.ext import Application, CommandHandler, CallbackContext, ExtBot, ContextTypes, TypeHandler
 from contextlib import asynccontextmanager
 from telegram import Update 
@@ -13,7 +14,8 @@ load_dotenv()
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 USER_ID = os.getenv("CHAT_ID")
-URL = ""
+PORT = os.getenv("PORT")
+URL = os.getenv("URL")
 
 # Enable logging
 logging.basicConfig(
@@ -47,7 +49,7 @@ class CustomContext(CallbackContext[ExtBot, dict, dict, dict]):
         return super().from_update(update, application)
     
 async def start(update: Update, context: CustomContext) -> None:
-    await update.message.reply_to_message("Hello")
+    await context.bot.send_message(text="Hello", chat_id=USER_ID)
 
 async def webhook_update(update: Opportunity, context: CustomContext) -> None:
     msg = f"{update.cex_ask} -> {update.cex_bid}\n{update.symbol}\nЦена покупки: {update.ask_price}\nЦена продажи: {update.bid_price}\nСпред: {update.spread}\nЛиквидность: {update.liquidity}"
@@ -78,14 +80,16 @@ app = FastAPI(lifespan=lifespan)
 
 @app.post("/telegram")
 async def telegram(request: Request) -> Response:
-    await ptb.update_queue.put(Update.de_json(data=request.json, bot = ptb.bot))
+    body = await request.json()
+    await ptb.update_queue.put(Update.de_json(data=body, bot = ptb.bot))
     return Response(status_code=HTTPStatus.OK)
 
 @app.post("/opportunity")
-async def opportunity(request: Request) -> Request:
+async def opportunity(request: Request) -> Response:
     try:
         body = await request.json()
-        cex_bid = body['cex_bid ']
+        print(body.keys())
+        cex_bid = body['cex_bid']
         cex_ask = body['cex_ask']
         bid_price = body['bid_price']
         ask_price = body['ask_price']

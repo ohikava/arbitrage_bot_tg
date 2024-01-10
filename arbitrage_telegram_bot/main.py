@@ -5,10 +5,12 @@ from http import HTTPStatus
 
 from telegram.ext import Application, CommandHandler, CallbackContext, ExtBot, ContextTypes, TypeHandler
 from contextlib import asynccontextmanager
-from telegram import Update 
+from telegram import Update
+from telegram.constants import ParseMode 
 import logging 
 from dataclasses import dataclass
 from fastapi import FastAPI, Response, Request
+from utils import format_opportunity
 
 load_dotenv()
 
@@ -52,8 +54,8 @@ async def start(update: Update, context: CustomContext) -> None:
     await context.bot.send_message(text="Hello", chat_id=USER_ID)
 
 async def webhook_update(update: Opportunity, context: CustomContext) -> None:
-    msg = f"{update.cex_ask} -> {update.cex_bid}\n{update.symbol}\nЦена покупки: {update.ask_price}\nЦена продажи: {update.bid_price}\nСпред: {update.spread}\nЛиквидность: {update.liquidity}"
-    await context.bot.send_message(text= msg, chat_id=USER_ID)
+    msg = format_opportunity(update)
+    await context.bot.send_message(text= msg, chat_id=USER_ID, parse_mode=ParseMode.HTML)
 
 context_types = ContextTypes(context=CustomContext)
 
@@ -68,15 +70,19 @@ ptb = (
 ptb.add_handler(CommandHandler("start", start))
 ptb.add_handler(TypeHandler(type=Opportunity, callback=webhook_update))
 
+models = {}
+
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def app_lifespan(app: FastAPI):
+    print('Init lifespan')
     await ptb.bot.set_webhook(f"{URL}/telegram")
     async with ptb:
         await ptb.start()
         yield
+        print('close lifespan')
         await ptb.stop()
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=app_lifespan)
 
 @app.post("/telegram")
 async def telegram(request: Request) -> Response:
@@ -84,11 +90,15 @@ async def telegram(request: Request) -> Response:
     await ptb.update_queue.put(Update.de_json(data=body, bot = ptb.bot))
     return Response(status_code=HTTPStatus.OK)
 
+@app.get("/healthchek")
+async def healthchek(request: Request) -> Response:
+    return Response(content='bot is working!', status_code=HTTPStatus.OK)
+
+
 @app.post("/opportunity")
 async def opportunity(request: Request) -> Response:
     try:
         body = await request.json()
-        print(body.keys())
         cex_bid = body['cex_bid']
         cex_ask = body['cex_ask']
         bid_price = body['bid_price']
@@ -98,14 +108,9 @@ async def opportunity(request: Request) -> Response:
         liquidity = body['liquidity']
     except KeyError:
         return Response(status_code=HTTPStatus.BAD_REQUEST, content="Please pass all required parameters")
-
+    
     await ptb.update_queue.put(Opportunity(**body))
     return Response(status_code=HTTPStatus.OK)
-
-@app.get("/healthchek")
-async def healthchek(request: Request) -> Response:
-    return Response(content='bot is working!', status_code=HTTPStatus.OK)
-
 
     
 

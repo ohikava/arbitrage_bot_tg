@@ -17,14 +17,18 @@ def get_url(cex_name, t1, t2):
 
 
 def format_opportunity(opportunity) -> str:
-    currency = opportunity.symbol.split('/')[1]
-    link1 = get_url(opportunity.cex_ask, opportunity.symbol.split('/')[0], currency)
-    link2 = get_url(opportunity.cex_bid, opportunity.symbol.split('/')[0], currency)
+    currency = opportunity.symbols.split('/')[1]
+    link1 = get_url(opportunity.cex_ask, opportunity.symbols.split('/')[0], currency)
+    link2 = get_url(opportunity.cex_bid, opportunity.symbols.split('/')[0], currency)
+    main_coin = opportunity.symbols.split('/')[0]
 
     min_liquidity = min(float(opportunity.bid_liquidity), float(opportunity.ask_liquidity))
 
+    withdraw_fee = float(opportunity.withdraw_fee) * float(opportunity.ask_price)
+
+    trading_fee = float(opportunity.ask_trade_fee) + float(opportunity.bid_trade_fee)
     res = f"""
-<i>{opportunity.symbol}</i>
+<i>{opportunity.symbols}</i>
 <a href='{link1}'>{opportunity.cex_ask}</a> -> <a href='{link2}'>{opportunity.cex_bid}</a>
 
 📈 {opportunity.cex_ask}
@@ -35,6 +39,10 @@ def format_opportunity(opportunity) -> str:
 <b>Цена:</b> {round(float(opportunity.bid_price), 7)} {currency}
 <b>Объём:</b> {round(float(opportunity.bid_liquidity), 2)} ~ {round(float(opportunity.bid_price) * float(opportunity.bid_liquidity), 2)} {currency}
 
-<b>Спред:</b> {round(float(opportunity.spread)*100, 2)}% ~ {round(min_liquidity * (float(opportunity.bid_price) - float(opportunity.ask_price)), 2)} {currency}
+💫 <b>Спред:</b> {round(float(opportunity.spread)*100, 2)}% ~ {round(min_liquidity * (float(opportunity.bid_price) - float(opportunity.ask_price)), 2)} {currency}
+
+<b>Доступные сети:</b> {', '.join(opportunity.chains)}
+<b>Минимальная комиссия за вывод:</b> {opportunity.withdraw_fee} {main_coin} ~ {round(withdraw_fee, 2)} {currency}
+<b>Комиссия за торговлю:</b> {trading_fee}%
 """
     return res 

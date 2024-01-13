@@ -36,9 +36,14 @@ class Opportunity:
     bid_price: str 
     ask_price: str 
     spread: str 
-    symbol: str 
+    symbols: str 
     bid_liquidity: str
     ask_liquidity: str
+    chains: list
+    withdraw_fee: float
+    ask_trade_fee: float
+    bid_trade_fee: float
+    
 
 class CustomContext(CallbackContext[ExtBot, dict, dict, dict]):
     """
@@ -100,7 +105,7 @@ async def healthchek(request: Request) -> Response:
 async def opportunity(request: Request) -> Response:
     try:
         body = await request.json()
-        keys = ['cex_bid', 'cex_ask', 'bid_price', 'ask_price', 'spread', 'symbol', 'bid_liquidity', 'ask_liquidity']
+        keys = ['cex_bid', 'cex_ask', 'bid_price', 'ask_price', 'spread', 'symbols', 'bid_liquidity', 'ask_liquidity', 'chains', 'withdraw_fee', 'ask_trade_fee', 'bid_trade_fee']
         for key in keys:
             if key not in body:
                 raise KeyError

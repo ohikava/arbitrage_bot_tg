@@ -43,6 +43,9 @@ class Opportunity:
     withdraw_fee: float
     ask_trade_fee: float
     bid_trade_fee: float
+    bid_price_2: str
+    ask_price_2: str
+    spread_2: str
     
 
 class CustomContext(CallbackContext[ExtBot, dict, dict, dict]):

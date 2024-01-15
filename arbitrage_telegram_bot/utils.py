@@ -27,22 +27,31 @@ def format_opportunity(opportunity) -> str:
     withdraw_fee = float(opportunity.withdraw_fee) * float(opportunity.ask_price)
 
     trading_fee = float(opportunity.ask_trade_fee) + float(opportunity.bid_trade_fee)
+    ask_price = round(float(opportunity.ask_price), 10)
+    bid_price = round(float(opportunity.bid_price), 10)
+    ask_price_2 = round(float(opportunity.ask_price_2), 10)
+    bid_price_2 = round(float(opportunity.bid_price_2), 10)
+
+    ask_price_row = f"""<b>Цена:</b> {ask_price} - {ask_price_2} {currency}""" if ask_price != ask_price_2 else f"""<b>Цена:</b> {ask_price} {currency}"""
+    bid_price_row = f"""<b>Цена:</b> {bid_price} - {bid_price_2} {currency}""" if bid_price != bid_price_2 else f"""<b>Цена:</b> {bid_price} {currency}"""
+    spread_row = f"""💫 <b>Спред:</b> {round(min(float(opportunity.spread), float(opportunity.spread_2))*100, 2)}%""" 
+
     res = f"""
 <i>{opportunity.symbols}</i>
 <a href='{link1}'>{opportunity.cex_ask}</a> -> <a href='{link2}'>{opportunity.cex_bid}</a>
 
 📈 {opportunity.cex_ask}
-<b>Цена:</b> {round(float(opportunity.ask_price), 7)} {currency}
-<b>Объём:</b> {round(float(opportunity.ask_liquidity), 2)} ~ {round(float(opportunity.ask_price) * float(opportunity.ask_liquidity), 2)} {currency}
+{ask_price_row}
+<b>Объём:</b> {round(float(opportunity.ask_liquidity), 2)} {currency}
 
 📉 {opportunity.cex_bid}
-<b>Цена:</b> {round(float(opportunity.bid_price), 7)} {currency}
-<b>Объём:</b> {round(float(opportunity.bid_liquidity), 2)} ~ {round(float(opportunity.bid_price) * float(opportunity.bid_liquidity), 2)} {currency}
+{bid_price_row}
+<b>Объём:</b> {round(float(opportunity.bid_liquidity), 2)} {currency}
 
-💫 <b>Спред:</b> {round(float(opportunity.spread)*100, 2)}% ~ {round(min_liquidity * (float(opportunity.bid_price) - float(opportunity.ask_price)), 2)} {currency}
+{spread_row}
 
 <b>Доступные сети:</b> {', '.join(opportunity.chains)}
-<b>Минимальная комиссия за вывод:</b> {opportunity.withdraw_fee} {main_coin} ~ {round(withdraw_fee, 2)} {currency}
+<b>Минимальная комиссия за вывод:</b> {opportunity.withdraw_fee} {main_coin} ~ {round(withdraw_fee, 6)} {currency}
 <b>Комиссия за торговлю:</b> {trading_fee}%
 """
     return res 

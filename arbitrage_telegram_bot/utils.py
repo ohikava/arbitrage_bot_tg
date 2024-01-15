@@ -3,7 +3,8 @@ name2url = {
     'mexc':  'https://www.mexc.com/ru-RU/exchange',
     'bitget': 'https://www.bitget.com/ru/spot',
     'bingx': 'https://bingx.com/ru-ru/spot',
-    "binance": "https://www.binance.com/en/trade"
+    "binance": "https://www.binance.com/en/trade",
+    'lbank': "https://www.lbank.com/trade"
 }
 
 name2symbol = {
@@ -11,7 +12,8 @@ name2symbol = {
     'mexc':  lambda t1, t2: f'{t1}_{t2}',
     'bitget': lambda t1, t2: f'{t1}{t2}',
     'bingx': lambda t1, t2: f'{t1}{t2}',
-    "binance": lambda t1, t2: f'{t1}_{t2}'
+    "binance": lambda t1, t2: f'{t1}_{t2}',
+    "lbank": lambda t1, t2: f'{t1}_{t2}'
 }
 
 def get_url(cex_name, t1, t2):
@@ -37,6 +39,7 @@ def format_opportunity(opportunity) -> str:
     ask_price_row = f"""<b>Цена:</b> {ask_price} - {ask_price_2} {currency}""" if ask_price != ask_price_2 else f"""<b>Цена:</b> {ask_price} {currency}"""
     bid_price_row = f"""<b>Цена:</b> {bid_price} - {bid_price_2} {currency}""" if bid_price != bid_price_2 else f"""<b>Цена:</b> {bid_price} {currency}"""
     spread_row = f"""💫 <b>Спред:</b> {round(min(float(opportunity.spread), float(opportunity.spread_2))*100, 2)}%""" 
+    withdraw_fee_row = f"""<b>Минимальная комиссия за вывод:</b> {opportunity.withdraw_fee} {main_coin} ~ {round(withdraw_fee, 6)} {currency}""" if opportunity.withdraw_fee != 'inf' else "Данные о коммиссии за вывод отсутсвуют\n"
 
     res = f"""
 <i>{opportunity.symbols}</i>
@@ -53,7 +56,10 @@ def format_opportunity(opportunity) -> str:
 {spread_row}
 
 <b>Доступные сети:</b> {', '.join(opportunity.chains)}
-<b>Минимальная комиссия за вывод:</b> {opportunity.withdraw_fee} {main_coin} ~ {round(withdraw_fee, 6)} {currency}
+{withdraw_fee_row}
 <b>Комиссия за торговлю:</b> {trading_fee}%
 """
+    
+    if opportunity.cex_bid.lower() == 'lbank':
+        res = res + "\n<i>Осторожно: </i>отсутсвуют данные о возможности депозита в LBank"
     return res 

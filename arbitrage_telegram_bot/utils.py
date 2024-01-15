@@ -3,13 +3,15 @@ name2url = {
     'mexc':  'https://www.mexc.com/ru-RU/exchange',
     'bitget': 'https://www.bitget.com/ru/spot',
     'bingx': 'https://bingx.com/ru-ru/spot',
+    "binance": "https://www.binance.com/en/trade"
 }
 
 name2symbol = {
     'bybit': lambda t1, t2: f'{t1}/{t2}',       
     'mexc':  lambda t1, t2: f'{t1}_{t2}',
     'bitget': lambda t1, t2: f'{t1}{t2}',
-    'bingx': lambda t1, t2: f'{t1}{t2}'
+    'bingx': lambda t1, t2: f'{t1}{t2}',
+    "binance": lambda t1, t2: f'{t1}_{t2}'
 }
 
 def get_url(cex_name, t1, t2):

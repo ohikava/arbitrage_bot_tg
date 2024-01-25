@@ -4,7 +4,8 @@ name2url = {
     'bitget': 'https://www.bitget.com/ru/spot',
     'bingx': 'https://bingx.com/ru-ru/spot',
     "binance": "https://www.binance.com/en/trade",
-    'lbank': "https://www.lbank.com/trade"
+    'lbank': "https://www.lbank.com/trade",
+    'okx': "https://www.okx.com/ru/trade-spot"
 }
 
 name2symbol = {
@@ -13,7 +14,8 @@ name2symbol = {
     'bitget': lambda t1, t2: f'{t1}{t2}',
     'bingx': lambda t1, t2: f'{t1}{t2}',
     "binance": lambda t1, t2: f'{t1}_{t2}',
-    "lbank": lambda t1, t2: f'{t1}_{t2}'
+    "lbank": lambda t1, t2: f'{t1.lower()}_{t2.lower()}',
+    'okx': lambda t1, t2: f'{t1}-{t2}'
 }
 
 def get_url(cex_name, t1, t2):
